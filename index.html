@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -203,7 +202,7 @@
             duration: "3h 21m", 
             rating: "7.8/10", 
             image: "https://m.media-amazon.com/images/M/MV5BZThmNDg1NjUtNWJhMC00YjA3LWJiMjItNmM4ZDQ5ZGZiN2Y2XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg", 
-            trailer: "WuH9ahB-68Q", // <--- UPDATED WORKING ID
+            trailer: "WuH9ahB-68Q",
             description: "The hardened son of a powerful industrialist returns home after years abroad and vows to take blood revenge on those threatening his father's life.", 
             actors: [
               { name: "Ranbir Kapoor", wiki: "Ranbir_Kapoor", image: fallbackAvatar("Ranbir Kapoor") }, 
@@ -341,7 +340,9 @@
             render(); 
         }
 
-        const THEATERS = ["Cinemark IMAX", "PVR Cinemas", "INOX Megaplex", "Alamo Drafthouse"];
+        // Updated for Ahmedabad-specific theaters
+        const THEATERS = ["PVR Acropolis (SG Highway)", "Cinepolis (Ahmedabad One Mall)", "NY Cinemas (CG Road)", "City Gold (Ashram Road)"];
+        
         const DATES = ["Today", "Tomorrow", "Friday", "Saturday"];
         const TIMES = ["10:30 AM", "1:15 PM", "4:00 PM", "7:30 PM", "10:00 PM"];
 
@@ -819,7 +820,7 @@
             document.getElementById('app-root').innerHTML = renderNav() + `<main class="flex-grow flex justify-center w-full z-10">${viewHtml}</main>`;
             document.getElementById('footer-root').innerHTML = renderFooter();
             
-            // Modal handling for YouTube Trailers & Info Links with Error 153 Patch
+            // Modal handling for YouTube Trailers & Info Links
             let modalContent = '';
             if (state.showTrailer && state.activeTrailerId) {
                 modalContent += `
