@@ -327,7 +327,8 @@
             booking: "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=2070&q=80",
             seats: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=2070&q=80",
             confirm: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=2070&q=80",
-            history: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=2070&q=80"
+            history: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=2070&q=80",
+            payment: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=2070&q=80"
         };
 
         // --- AUTOMATIC WIKIPEDIA PHOTO LOADER ---
@@ -367,7 +368,8 @@
             selectedMovie: null,
             bookingDetails: { date: '', theater: '', time: '' },
             selectedSeats: [],
-            confirmedTicket: null
+            confirmedTicket: null,
+            paymentAmount: 0 
         };
 
         function setState(updates) {
@@ -420,20 +422,33 @@
             setState({ selectedSeats: seats });
         };
 
-        window.checkout = (totalAmount) => {
-            const ticketData = {
-                id: 'LOCAL_' + Math.random().toString(36).substr(2, 9),
-                movieTitle: state.selectedMovie.title,
-                date: state.bookingDetails.date,
-                time: state.bookingDetails.time,
-                theater: state.bookingDetails.theater,
-                seats: state.selectedSeats,
-                amount: totalAmount
-            };
-            const history = JSON.parse(localStorage.getItem('cv_history') || '[]');
-            history.push(ticketData);
-            localStorage.setItem('cv_history', JSON.stringify(history));
-            setState({ currentView: 'confirm', confirmedTicket: ticketData });
+        window.proceedToPayment = (totalAmount) => {
+            setState({ currentView: 'payment', paymentAmount: totalAmount });
+        };
+
+        window.processPayment = (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('payBtn');
+            btn.innerHTML = '<span class="animate-pulse">Processing Secure Payment...</span>';
+            btn.disabled = true;
+            
+            // Simulate API processing delay
+            setTimeout(() => {
+                const ticketData = {
+                    id: 'TXN_' + Math.random().toString(36).substr(2, 9).toUpperCase(),
+                    movieTitle: state.selectedMovie.title,
+                    date: state.bookingDetails.date,
+                    time: state.bookingDetails.time,
+                    theater: state.bookingDetails.theater,
+                    seats: state.selectedSeats,
+                    amount: state.paymentAmount
+                };
+                const history = JSON.parse(localStorage.getItem('cv_history') || '[]');
+                history.push(ticketData);
+                localStorage.setItem('cv_history', JSON.stringify(history));
+                
+                setState({ currentView: 'confirm', confirmedTicket: ticketData, paymentAmount: 0 });
+            }, 1500);
         };
 
         window.openTrailerModal = (trailerId) => {
@@ -729,9 +744,66 @@
                                     <p class="text-xs font-bold text-zinc-500 mb-1 uppercase tracking-widest">Total Amount</p>
                                     <p class="font-black text-3xl text-zinc-900 dark:text-white">₹${totalAmount}</p>
                                 </div>
-                                <button ${state.selectedSeats.length === 0 ? 'disabled' : ''} onclick="checkout(${totalAmount})" class="px-10 py-4 bg-neon-rose hover:opacity-80 text-white font-black uppercase tracking-widest rounded-lg shadow-[0_0_20px_rgba(255,20,147,0.4)] transition-all disabled:opacity-50 w-full sm:w-auto">Checkout</button>
+                                <button ${state.selectedSeats.length === 0 ? 'disabled' : ''} onclick="proceedToPayment(${totalAmount})" class="px-10 py-4 bg-neon-rose hover:opacity-80 text-white font-black uppercase tracking-widest rounded-lg shadow-[0_0_20px_rgba(255,20,147,0.4)] transition-all disabled:opacity-50 w-full sm:w-auto">Proceed to Pay</button>
                             </div>
                         </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderPayment() {
+            const amount = state.paymentAmount;
+            return `
+                <div class="max-w-2xl mx-auto px-6 py-12 w-full fade-in zoom-in-95">
+                    <div class="flex items-center justify-between mb-8">
+                        <button onclick="setState({currentView: 'seats'})" class="flex items-center gap-2 font-bold text-zinc-500 hover:text-neon-rose transition-colors uppercase tracking-wider text-sm">
+                            <i data-lucide="chevron-left" class="w-5 h-5"></i> Back to Seats
+                        </button>
+                        <div class="flex items-center gap-2 text-green-500 font-bold text-sm uppercase tracking-widest">
+                            <i data-lucide="shield-check" class="w-5 h-5"></i> Secure Checkout
+                        </div>
+                    </div>
+                    
+                    <div class="p-8 md:p-12 bg-white/90 dark:bg-zinc-900/80 border border-black/10 dark:border-white/10 shadow-2xl rounded-3xl backdrop-blur-xl transition-colors duration-500">
+                        <h2 class="text-3xl font-black mb-6 text-zinc-900 dark:text-white uppercase tracking-tight">Payment Details</h2>
+                        
+                        <div class="mb-8 p-4 rounded-xl bg-zinc-50 dark:bg-jet-black border border-black/5 dark:border-white/5 flex justify-between items-center">
+                            <span class="text-zinc-500 font-bold uppercase tracking-wider text-sm">Total to Pay</span>
+                            <span class="text-2xl font-black text-neon-rose">₹${amount}</span>
+                        </div>
+
+                        <form onsubmit="processPayment(event)" class="space-y-6">
+                            <div>
+                                <label class="block text-xs font-bold text-zinc-500 mb-2 uppercase tracking-widest">Cardholder Name</label>
+                                <input type="text" required placeholder="John Doe" class="w-full bg-zinc-50 dark:bg-jet-black border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-3.5 text-zinc-900 dark:text-white focus:border-neon-rose outline-none transition-all" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-zinc-500 mb-2 uppercase tracking-widest">Card Number</label>
+                                <div class="relative">
+                                    <input type="text" required pattern="[0-9]{16}" maxlength="16" placeholder="0000 0000 0000 0000" class="w-full bg-zinc-50 dark:bg-jet-black border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-3.5 pl-12 text-zinc-900 dark:text-white focus:border-neon-rose outline-none transition-all" />
+                                    <i data-lucide="credit-card" class="w-5 h-5 text-zinc-400 absolute left-4 top-4"></i>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-xs font-bold text-zinc-500 mb-2 uppercase tracking-widest">Expiry</label>
+                                    <input type="text" required pattern="(0[1-9]|1[0-2])\\/[0-9]{2}" maxlength="5" placeholder="MM/YY" class="w-full bg-zinc-50 dark:bg-jet-black border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-3.5 text-zinc-900 dark:text-white focus:border-neon-rose outline-none transition-all" />
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-zinc-500 mb-2 uppercase tracking-widest">CVV</label>
+                                    <input type="password" required pattern="[0-9]{3,4}" maxlength="4" placeholder="123" class="w-full bg-zinc-50 dark:bg-jet-black border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-3.5 text-zinc-900 dark:text-white focus:border-neon-rose outline-none transition-all" />
+                                </div>
+                            </div>
+                            <div class="pt-4">
+                                <button id="payBtn" type="submit" class="w-full py-4 text-lg bg-cerulean hover:bg-cerulean/90 text-white font-black uppercase tracking-widest rounded-lg shadow-[0_0_20px_rgba(0,123,167,0.4)] transition-all flex items-center justify-center gap-2">
+                                    <i data-lucide="lock" class="w-5 h-5"></i> Pay ₹${amount} Securely
+                                </button>
+                                <p class="text-center text-xs text-zinc-400 mt-4 flex items-center justify-center gap-1 font-medium">
+                                    <i data-lucide="shield" class="w-3 h-3"></i> 256-bit SSL Encrypted
+                                </p>
+                            </div>
+                        </form>
                     </div>
                 </div>
             `;
@@ -810,7 +882,7 @@
         // --- RENDER PIPELINE ---
         function render() {
             let bgImg = MARVEL_BACKGROUNDS[state.currentView] || MARVEL_BACKGROUNDS.home;
-            if (state.selectedMovie && (state.currentView === 'booking' || state.currentView === 'seats')) {
+            if (state.selectedMovie && (state.currentView === 'booking' || state.currentView === 'seats' || state.currentView === 'payment')) {
                 bgImg = state.selectedMovie.image;
             }
             document.getElementById('global-bg').style.backgroundImage = `url('${bgImg}')`;
@@ -823,6 +895,7 @@
                 case 'releases': viewHtml = renderMoviesList(); break;
                 case 'booking': viewHtml = renderBooking(); break;
                 case 'seats': viewHtml = renderSeats(); break;
+                case 'payment': viewHtml = renderPayment(); break;
                 case 'confirm': viewHtml = renderConfirm(); break;
                 case 'history': viewHtml = renderHistory(); break;
             }
