@@ -26,7 +26,7 @@
             document.documentElement.classList.add('dark');
         }
     </script>
-    <!-- Lucide Icons -->
+    
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         .fade-in { animation: fadeIn 0.7s ease-out forwards; }
@@ -56,7 +56,6 @@
     <script>
         const fallbackAvatar = (name) => `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=FF1493&color=fff&size=200&bold=true`;
 
-        // --- 1. FULL DATA ARRAYS WITH VALID YOUTUBE IDs ---
         const MOVIES = [
           { 
             id: 1, 
@@ -357,7 +356,7 @@
         const DATES = ["Today", "Tomorrow", "Friday", "Saturday"];
         const TIMES = ["10:30 AM", "1:15 PM", "4:00 PM", "7:30 PM", "10:00 PM"];
 
-        // --- GLOBAL STATE ---
+        //GLOBAL STATE
         let state = {
             theme: localStorage.getItem('cv_theme') || 'dark',
             user: localStorage.getItem('cv_user_id') ? { id: localStorage.getItem('cv_user_id'), email: localStorage.getItem('cv_user_email') } : null,
@@ -441,7 +440,7 @@
             setState({ showTrailer: true, activeTrailerId: trailerId });
         };
 
-        // --- RENDERERS ---
+        // RENDERERS
         function renderNav() {
             const isLoggedIn = state.user && state.currentView !== 'login';
             const menuItems = isLoggedIn ? `
